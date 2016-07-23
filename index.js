@@ -28,6 +28,11 @@ class ModelWrapper {
          * @type {Array}
          */
         this.statics = [];
+        /**
+         * Hidden fields
+         * @type {Array}
+         */
+        this.hidden = [];
 
         this.db = function (name) {
             return name ? mongoose.connection.useDb(name) : mongoose;
@@ -44,7 +49,7 @@ class ModelWrapper {
         return this.db(dbname).model(this.modelName);
     };
 
-    applyHooks(type, action, req, res, doc) {
+    applyHooks(type, action, req, res, data) {
         var hooksToApply = [];
 
         if (this.hooks[type][action]) {
@@ -54,7 +59,7 @@ class ModelWrapper {
             hooksToApply = hooksToApply.concat(this.hooks[type].all);
         }
         hooksToApply.forEach(function (hook) {
-            hook(req, res, doc);
+            hook(req, res, data);
         })
     };
 
@@ -160,6 +165,17 @@ class ModelWrapper {
             return this.getMiddleware(action);
         }
     };
+
+    /**
+     * Add post hook to exclude field(s) from response object(s)
+     * Note that hidden field still can be changed via update
+     * @param {Array|String} args
+     * @returns {ModelWrapper}
+     */
+    hide(args) {
+        this.hidden = this.hidden.concat(args instanceof Array ? args : [args]);
+        return this;
+    }
 
     /**
      * Shortcut for exposeMethod
@@ -340,8 +356,8 @@ class Restaman {
     };
 
     /**
-     * remove ModelWrapper instance for given model
-     * for given model name or mongoose Model instance
+     * remove ModelWrapper instance
+     * for given model name
      * @param model
      * @returns {Restaman}
      */
@@ -363,13 +379,26 @@ class Restaman {
     };
 
     /**
+     * Prepare ModelWrapper and add to router
+     */
+    setupModel(modelWrapper, router) {
+        modelWrapper.addHook('post', ['create', 'find', 'findOne', 'delete', 'update'], (req, res, data) => {    // todo move to wrapper
+
+            const removeHidden = (doc) => modelWrapper.hidden.forEach(field => doc[field] = undefined);
+
+            if (data && modelWrapper.hidden.length) {
+                data instanceof Array ? data.forEach(removeHidden) : removeHidden(data);
+            }
+        });
+        this.setupModelRoutes(modelWrapper, router);
+
+    }
+    /**
      *
      * @param {ModelWrapper} modelWrapper
      * @param {Object} router
      */
     setupModelRoutes(modelWrapper, router) {
-
-        router.use(bodyParser.json());
 
         let path = '/' + modelWrapper.model().collection.collectionName;
         modelWrapper.getStatics().forEach(method => router.post(path + '/' + method.exposeName, (req, res, next) =>
@@ -398,12 +427,11 @@ class Restaman {
             .delete(path + '/:id', modelWrapper.middleware('delete'), function (req, res, next) {
                 modelWrapper.delete(req, res, next);
             });
-
-
     };
 
     initRouter(router) {
-        this.models.forEach(model => this.setupModelRoutes(model, router));
+        router.use(bodyParser.json());
+        this.models.forEach(model => this.setupModel(model, router));
         return this;
     };
 

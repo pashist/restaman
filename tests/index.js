@@ -25,7 +25,7 @@ describe('Restaman', function () {
                 return {message: `exposedStaticMethod2 invoked with: param1: '${param1}', param2: '${param2}'`};
             };
             const postSchema = new mongoose.Schema(
-                {_id: Number, title: String, content: String, user: Number},
+                {_id: Number, title: String, content: String, user: Number, field1: String, field2: String},
                 {versionKey: false}
             );
 
@@ -172,12 +172,13 @@ describe('Restaman', function () {
 
             restaman.addModel('Test')
                 .exposeStatic('exposedStaticMethod');
-            restaman.addModel('Post')
+            let _post = restaman.addModel('Post')
                 .pre('create', addContent)
                 .pre('update', updateContent)
                 .pre('find', filterUser)
                 .pre('delete', restrictDelete)
-                .middleware('count', restrictCount);
+                .middleware('count', restrictCount)
+                .hide(['field1', 'field2']);
 
             let router = restaman.router();
 
@@ -203,7 +204,7 @@ describe('Restaman', function () {
         it(`Add test Post "{title: 'other title', user: 2, _id: 1}"`, done => {
             request(app)
                 .post('/api/posts')
-                .send({title: 'some title', user: 2, _id: 2})
+                .send({title: 'some title', user: 2, _id: 2, field1: '111'})
                 .expect(200, {title: 'some title', user: 2, _id: 2, content: 'from pre create hook'}, done);
         });
         it(`pre create hook`, done => {
@@ -232,6 +233,11 @@ describe('Restaman', function () {
             request(app)
                 .get('/api/posts/count')
                 .expect(401, {message: 'count op not allowed for you!'}, done);
+        });
+        it(`hide`, done => {
+            request(app)
+                .get('/api/posts/2')
+                .expect(200, {title: 'some title', user: 3, _id: 2, content: 'from pre update hook'}, done);
         });
     });
 
