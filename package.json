@@ -1,6 +1,6 @@
 {
   "name": "restaman",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Simple tool for expose mongoose models via REST api",
   "repository": {
     "type": "git",
