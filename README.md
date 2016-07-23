@@ -23,7 +23,8 @@ Now express app will handle REST routes for `User` model on `/api/users` endpoin
 ### Exposing methods
 Restaman allows expose model static methods using `exposeStatic` method of ModelWrapper instance. 
 ```
-const restaman = require('restaman');
+const Restaman = require('restaman');
+const restaman = new Restaman();
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -48,7 +49,8 @@ It includes `pre` and `post` types for `init`, `create`, `find`, `findOne`, `del
 
 ##### Simple example for filtering docs by user:
 ```
-const restaman = require('restaman');
+const Restaman = require('restaman');
+const restaman = new Restaman();
 
 const postSchema = new mongoose.Schema({
     title: String,
@@ -81,7 +83,6 @@ restaman.addModel('User').post('find', hideEmail);
 
 ##### Dynamic DB switching example using `pre` `init` hook
 ```
-const restmean = require('restmean');
 restmean.addModel('User').pre('init', (req, res, params) => params.db = req.params.db);
 app.use('/api/:db', restmean.router({mergeParams: true}));
 ```
