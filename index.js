@@ -203,7 +203,7 @@ class ModelWrapper {
         let model = this.initModel(req, res);
         let query = parseQuery(req.query);
         query.filter._id = req.params.id;
-        this.applyHooks('pre', 'findOne', req, res);
+        this.applyHooks('pre', 'findOne', req, res, query);
         let promise = model.findOne(query.filter, query.projection);
         if (query.populate) {
             promise.populate(query.populate);
