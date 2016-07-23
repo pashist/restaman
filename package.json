@@ -1,6 +1,6 @@
 {
   "name": "restaman",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "Simple tool for expose mongoose models via REST api",
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
   "author": "mistby@gmail.com",
   "license": "MIT",
   "dependencies": {
+    "get-parameter-names": "^0.3.0",
     "lodash": "^4.13.1"
   },
   "devDependencies": {
