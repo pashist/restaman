@@ -111,11 +111,16 @@ describe('Restaman', function () {
                 .send({name: 'someName', _id: 1})
                 .expect(200, {name: 'someName', _id: 1}, done)
         });
-
+        it(`POST /api/tests "{name: 'someName2', _id: 2}"`, done => {
+            request(app)
+                .post('/api/tests')
+                .send({name: 'someName2', _id: 2})
+                .expect(200, {name: 'someName2', _id: 2}, done)
+        });
         it('GET /api/tests', done => {
             request(app)
                 .get('/api/tests')
-                .expect(200, [{name: 'someName', _id: 1}], done)
+                .expect(200, [{name: 'someName', _id: 1}, {name: 'someName2', _id: 2}], done)
         });
 
         it('GET /api/tests/1', done => {
@@ -130,8 +135,24 @@ describe('Restaman', function () {
                 .send({name: 'newName', _id: 1})
                 .expect(200, {name: 'newName', _id: 1})
                 .end(() => {
-                    request(app).get('/api/tests').expect(200, [{name: 'newName', _id: 1}], done)
+                    request(app).get('/api/tests').expect(200, [{name: 'newName', _id: 1}, {
+                        _id: 2,
+                        name: 'someName2'
+                    }], done)
                 });
+        });
+
+        it(`GET /api/tests/count`, done => {
+            request(app)
+                .get('/api/tests/count')
+                .expect(200, {count: 2}, done)
+        });
+
+        it(`GET /api/tests/count?_id=2`, done => {
+            request(app)
+                .get('/api/tests/count')
+                .query({_id: 2 })
+                .expect(200, {count: 1}, done)
         });
 
         it(`DELETE /api/tests/1`, done => {
@@ -139,7 +160,7 @@ describe('Restaman', function () {
                 .delete('/api/tests/1')
                 .expect(200, {name: 'newName', _id: 1})
                 .end(() => {
-                    request(app).get('/api/tests').expect(200, [], done)
+                    request(app).get('/api/tests').expect(200, [{_id: 2, name: 'someName2'}], done)
                 });
         });
 
@@ -150,6 +171,7 @@ describe('Restaman', function () {
                 .expect(200, {message: `exposedStaticMethod invoked with: param1: 'param1 value', param2: 'param2 value'`}, done);
 
         });
+
 
     });
 
