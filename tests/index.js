@@ -172,6 +172,13 @@ describe('Restaman', function () {
 
         });
 
+        it(`OPTIONS /api/tests`, done => {
+            request(app)
+                .options('/api/tests')
+                .expect('Allow', 'GET, OPTIONS, DELETE, POST, PUT')
+                .expect(204, {}, done);
+
+        });
 
     });
 

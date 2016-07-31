@@ -406,6 +406,9 @@ class Restaman {
         ));
 
         router
+            .options(path, function (req, res) {
+                res.status(204).set('Allow', 'GET, OPTIONS, DELETE, POST, PUT').end();
+            })
             .get(path + '/count', modelWrapper.middleware('count'), function (req, res, next) {
                 modelWrapper.count(req, res, next);
             })
