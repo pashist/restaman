@@ -208,7 +208,16 @@ describe('Restaman', function () {
                     doc.content = 'from post get hook';
                 }
             };
+            const addMultipleHooks = (req, res, doc) => {
+                if(req.header('TEST-POST-MULTIPLE-HOOKS')) {
+                    if(doc instanceof Array) {
+                        doc.forEach(_doc => _doc.content = 'from post multiple hooks');
+                    } else {
+                        doc.content = 'from post multiple hooks';
+                    }
 
+                }
+            };
             restaman.addModel('Test')
                 .exposeStatic('exposedStaticMethod');
             let _post = restaman.addModel('Post')
@@ -218,6 +227,7 @@ describe('Restaman', function () {
                 .pre('delete', restrictDelete)
                 .post('findOne', addFindOneContent)
                 .post('get', addGetContent)
+                .post(['get', 'query'], addMultipleHooks)
                 .middleware('count', restrictCount)
                 .hide(['field1', 'field2']);
 
@@ -275,6 +285,19 @@ describe('Restaman', function () {
                 .get('/api/posts/2')
                 .set('TEST-POST-GET-HOOK', true)
                 .expect(200, {title: 'some title', user: 3, _id: 2, content: 'from post get hook'}, done);
+        });
+        it(`post multiple hook 1`, done => {
+            request(app)
+                .get('/api/posts/2')
+                .set('TEST-POST-MULTIPLE-HOOKS', true)
+                .expect(200, {title: 'some title', user: 3, _id: 2, content: 'from post multiple hooks'}, done);
+        });
+        it(`post multiple hook 2`, done => {
+            request(app)
+                .get('/api/posts')
+                .query({limit: 1 })
+                .set('TEST-POST-MULTIPLE-HOOKS', true)
+                .expect(200, [{title: 'some title', user: 1, _id: 1, content: 'from post multiple hooks'}], done);
         });
         it(`pre delete hook`, done => {
             request(app)
