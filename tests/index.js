@@ -198,6 +198,16 @@ describe('Restaman', function () {
             const restrictCount = function (req, res, next) {
                 res.status(401).send({message: 'count op not allowed for you!'});
             };
+            const addFindOneContent = (req, res, doc) => {
+                if(req.header('TEST-POST-FINDONE-HOOK')) {
+                    doc.content = 'from post findOne hook';
+                }
+            };
+            const addGetContent = (req, res, doc) => {
+                if(req.header('TEST-POST-GET-HOOK')) {
+                    doc.content = 'from post get hook';
+                }
+            };
 
             restaman.addModel('Test')
                 .exposeStatic('exposedStaticMethod');
@@ -206,6 +216,8 @@ describe('Restaman', function () {
                 .pre('update', updateContent)
                 .pre('find', filterUser)
                 .pre('delete', restrictDelete)
+                .post('findOne', addFindOneContent)
+                .post('get', addGetContent)
                 .middleware('count', restrictCount)
                 .hide(['field1', 'field2']);
 
@@ -230,7 +242,7 @@ describe('Restaman', function () {
                 .send({title: 'some title', user: 1, _id: 1})
                 .expect(200, {title: 'some title', user: 1, _id: 1, content: 'from pre create hook'}, done);
         });
-        it(`Add test Post "{title: 'other title', user: 2, _id: 1}"`, done => {
+        it(`Add test Post "{title: 'other title', user: 2, _id: 2}"`, done => {
             request(app)
                 .post('/api/posts')
                 .send({title: 'some title', user: 2, _id: 2, field1: '111'})
@@ -251,6 +263,18 @@ describe('Restaman', function () {
             request(app)
                 .get('/api/posts')
                 .expect(200, [{title: 'some title', user: 1, _id: 1, content: 'from pre create hook'}], done);
+        });
+        it(`post findOne hook`, done => {
+            request(app)
+                .get('/api/posts/2')
+                .set('TEST-POST-FINDONE-HOOK', true)
+                .expect(200, {title: 'some title', user: 3, _id: 2, content: 'from post findOne hook'}, done);
+        });
+        it(`post get hook`, done => {
+            request(app)
+                .get('/api/posts/2')
+                .set('TEST-POST-GET-HOOK', true)
+                .expect(200, {title: 'some title', user: 3, _id: 2, content: 'from post get hook'}, done);
         });
         it(`pre delete hook`, done => {
             request(app)

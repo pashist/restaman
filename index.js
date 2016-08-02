@@ -47,7 +47,7 @@ class ModelWrapper {
     model(params) {
         let dbname = params ? params.db : null;
         return this.db(dbname).model(this.modelName);
-    };
+    }
 
     applyHooks(type, action, req, res, data) {
         var hooksToApply = [];
@@ -61,19 +61,40 @@ class ModelWrapper {
         hooksToApply.forEach(function (hook) {
             hook(req, res, data);
         })
-    };
+    }
 
     addHook(type, action, callback) {
-        if (!this.hooks[type][action]) {
-            this.hooks[type][action] = [];
-        }
+
         if (action instanceof Array) {
             action.forEach(_action => this.addHook(type, _action, callback))
         } else {
-            this.hooks[type][action].push(callback);
+            let actionName = this.parseActionName(action);
+            if (actionName) {
+                if (!this.hooks[type][actionName]) {
+                    this.hooks[type][actionName] = [];
+                }
+                this.hooks[type][actionName].push(callback);
+            }
         }
-    };
+    }
 
+    parseActionName(action) {
+
+        let names = {
+            'get': 'findOne',
+            findOne: 'findOne',
+            query: 'find',
+            find: 'find',
+            update: 'update',
+            create:'create',
+            'delete': 'delete',
+            remove: 'delete',
+            init: 'init',
+            count: 'count'
+        };
+        return names[action];
+
+    };
     setMiddleware(action, callback) {
         if (action instanceof Array) {
             action.forEach(val => this.setMiddleware(val, callback))
