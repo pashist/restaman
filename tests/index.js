@@ -154,7 +154,13 @@ describe('Restaman', function () {
                 .query({_id: 2 })
                 .expect(200, {count: 1}, done)
         });
-
+        it(`GET /api/tests/count {_id: {$in: [1, 2]}}`, done => {
+            request(app)
+                .get('/api/tests/count')
+                .query({_id: {$in: [1, 2]}})
+                .expect(200, {count: 2}, done)
+        });
+        
         it(`DELETE /api/tests/1`, done => {
             request(app)
                 .delete('/api/tests/1')

@@ -304,16 +304,14 @@ class ModelWrapper {
 
     count(req, res, next) {
         var model = this.initModel(req, res);
-        let query = parseQuery({filter: req.query});
-        this.applyHooks('pre', 'count', req, res, query);
-        model.count(query.filter)
-            .then((count) => {
+        let criteria = parseCountCriteria(req.query);
+        this.applyHooks('pre', 'count', req, res, criteria);
+        model.count(criteria)
+            .then(count => {
                 this.applyHooks('post', 'count', req, res, count);
                 res.send({count: count})
             })
-            .catch((err) => {
-                next(err)
-            })
+            .catch(next)
     };
 
     callMethod(method, req, res, next) {
@@ -536,6 +534,22 @@ function parseQuery(query) {
         options: parseQueryOptions(query),
         projection: parseQueryProjection(query)
     }
+}
+
+function parseCountCriteria(query) {
+    let result = {};
+    if (typeof query === 'object') {
+        Object.keys(query).forEach(key => {
+            if (typeof query[key] === 'string') {
+                try {
+                    result[key] = JSON.parse(query[key]);
+                } catch (e) {
+                    result[key] = query[key]
+                }
+            }
+        })
+    }
+    return result;
 }
 
 function parseJSON(str) {
