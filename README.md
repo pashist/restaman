@@ -1,7 +1,7 @@
 # Restaman
 Simple tool for expose mongoose model via REST api
 
-[![Dependency Status](https://david-dm.org/pashist/restaman.svg)](https://david-dm.org/pashist/restaman) [![npm](https://img.shields.io/npm/v/restaman.svg?maxAge=2592000)](https://www.npmjs.com/package/mongoose-patch-history-plugin)
+[![Dependency Status](https://david-dm.org/pashist/restaman.svg)](https://david-dm.org/pashist/restaman) [![npm](https://img.shields.io/npm/v/restaman.svg?maxAge=2592000)](https://www.npmjs.com/package/restaman)
 
 ### Requirements
 - `node 5+`
